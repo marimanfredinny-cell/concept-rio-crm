@@ -46,8 +46,12 @@ export default function LeadsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este lead?')) return
     const sb = createClient()
-    await sb.from('leads').delete().eq('id', id)
-    load()
+    const { error } = await sb.from('leads').delete().eq('id', id)
+    if (error) {
+      alert(`Erro ao excluir: ${error.message}`)
+      return
+    }
+    await load()
   }
 
   const handleStatusChange = async (lead: Lead, status: LeadStatus) => {
