@@ -8,6 +8,12 @@ import AtendimentoModal from '@/components/leads/AtendimentoModal'
 import type { Lead, LeadStatus } from '@/types'
 import { LEAD_STATUS_CONFIG, CORRETORES, formatCurrency, formatDate } from '@/types'
 
+const ROLE_MAP: Record<string, string> = {
+  'gestora@conceptrio.com.br': 'gestora',
+  'jean@conceptrio.com.br': 'corretor',
+  'luiz@conceptrio.com.br': 'corretor',
+}
+
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
@@ -18,12 +24,20 @@ export default function LeadsPage() {
   const [editLead, setEditLead] = useState<Lead | null>(null)
   const [atendimentoLead, setAtendimentoLead] = useState<Lead | null>(null)
   const [currentUser] = useState('Luiz')
+  const [userRole, setUserRole] = useState<string>('corretor')
 
   const load = useCallback(async () => {
     setLoading(true)
     const sb = createClient()
-    const { data } = await sb.from('leads').select('*').order('created_at', { ascending: false })
+    const [{ data }, { data: { user } }] = await Promise.all([
+      sb.from('leads').select('*').order('created_at', { ascending: false }),
+      sb.auth.getUser(),
+    ])
     setLeads(data ?? [])
+    if (user) {
+      const role = (user.user_metadata?.role as string) ?? ROLE_MAP[user.email ?? ''] ?? 'corretor'
+      setUserRole(role)
+    }
     setLoading(false)
   }, [])
 
@@ -195,13 +209,15 @@ export default function LeadsPage() {
                           >
                             <Edit2 size={14} />
                           </button>
-                          <button
-                            onClick={() => handleDelete(lead.id)}
-                            title="Excluir"
-                            className="p-1.5 text-white/30 hover:text-red-400 transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          {userRole === 'gestora' && (
+                            <button
+                              onClick={() => handleDelete(lead.id)}
+                              title="Excluir"
+                              className="p-1.5 text-white/30 hover:text-red-400 transition-colors"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
