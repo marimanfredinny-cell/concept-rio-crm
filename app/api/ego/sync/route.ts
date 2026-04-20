@@ -102,7 +102,13 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true, total, upserted })
-  } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 })
+  } catch (err: unknown) {
+    const cause = err instanceof Error ? (err as Error & { cause?: unknown }).cause : undefined
+    return NextResponse.json({
+      error: String(err),
+      cause: cause ? String(cause) : undefined,
+      api_key_set: !!EGO_API_KEY,
+      empresa_id: EGO_EMPRESA_ID,
+    }, { status: 500 })
   }
 }
