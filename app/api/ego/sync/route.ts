@@ -52,11 +52,23 @@ export async function POST(req: NextRequest) {
         }
       )
 
-      if (!res.ok) break
+      if (!res.ok) {
+        const errText = await res.text()
+        return NextResponse.json(
+          { error: `Ego RE API erro ${res.status}: ${errText}` },
+          { status: 502 }
+        )
+      }
 
       const body = await res.json()
-      const items: EgoImovel[] = body.data ?? body.imoveis ?? body ?? []
-      if (!Array.isArray(items) || items.length === 0) break
+      const items: EgoImovel[] = body.data ?? body.imoveis ?? body.results ?? body.properties ?? (Array.isArray(body) ? body : [])
+      if (!Array.isArray(items) || items.length === 0) {
+        // Return debug info on first page so we can inspect the actual response shape
+        if (page === 1) {
+          return NextResponse.json({ ok: true, total: 0, upserted: 0, debug_body: body })
+        }
+        break
+      }
 
       total += items.length
 
