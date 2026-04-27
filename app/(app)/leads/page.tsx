@@ -92,6 +92,12 @@ export default function LeadsPage() {
     load()
   }
 
+  const handleCorretorChange = async (lead: Lead, corretor: string) => {
+    const sb = createClient()
+    await sb.from('leads').update({ corretor }).eq('id', lead.id)
+    load()
+  }
+
   const filtered = leads.filter(l => {
     const matchSearch =
       !search ||
@@ -215,7 +221,32 @@ export default function LeadsPage() {
                         {lead.email && <p className="text-white/30 text-xs">{lead.email}</p>}
                       </td>
                       <td className="px-5 py-3.5 text-white/40 text-xs">{lead.origem || '—'}</td>
-                      <td className="px-5 py-3.5 text-white/50 text-xs">{lead.corretor}</td>
+                      <td className="px-5 py-3.5">
+                        <div className="relative group/corretor">
+                          <span className={`text-xs cursor-pointer px-2 py-1 rounded-md transition-colors hover:bg-white/[0.06] ${lead.corretor ? 'text-white/60' : 'text-white/20'}`}>
+                            {lead.corretor || 'Atribuir →'}
+                          </span>
+                          <div className="absolute left-0 top-7 z-10 hidden group-hover/corretor:block bg-[#222] border border-white/10 rounded-xl shadow-xl p-2 min-w-36">
+                            {CORRETORES.map(c => (
+                              <button
+                                key={c}
+                                onClick={() => handleCorretorChange(lead, c)}
+                                className={`w-full text-left px-3 py-1.5 rounded-lg text-xs transition-colors ${lead.corretor === c ? 'text-[#c8a96e] opacity-60' : 'text-white/60 hover:bg-white/[0.06] hover:text-white/80'}`}
+                              >
+                                {c}
+                              </button>
+                            ))}
+                            {lead.corretor && (
+                              <button
+                                onClick={() => handleCorretorChange(lead, '')}
+                                className="w-full text-left px-3 py-1.5 rounded-lg text-xs text-white/25 hover:bg-white/[0.06] hover:text-red-400 transition-colors border-t border-white/[0.05] mt-1 pt-2"
+                              >
+                                Remover
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </td>
                       <td className="px-5 py-3.5 text-white/50 text-xs">{formatCurrency(lead.orcamento)}</td>
                       <td className="px-5 py-3.5">
                         <div className="relative group/status">
