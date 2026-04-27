@@ -103,19 +103,20 @@ export default function ImoveisPage() {
         </div>
       )}
 
-      {/* Ego RE info banner */}
-      <div className="mb-6 bg-[#c8a96e]/5 border border-[#c8a96e]/20 rounded-xl p-4 flex items-start gap-3">
-        <Building2 size={16} className="text-[#c8a96e] mt-0.5 flex-shrink-0" />
-        <div>
-          <p className="text-[#c8a96e] text-sm font-medium">Integração Ego Real Estate</p>
-          <p className="text-white/40 text-xs mt-0.5">
-            Configure <code className="bg-white/10 px-1 rounded">EGO_API_KEY</code> e{' '}
-            <code className="bg-white/10 px-1 rounded">EGO_EMPRESA_ID</code> no arquivo{' '}
-            <code className="bg-white/10 px-1 rounded">.env.local</code> e clique em{' '}
-            <strong className="text-white/60">Sync Ego RE</strong> para importar os imóveis automaticamente.
-          </p>
+      {/* Ego RE info banner — só aparece quando não há imóveis */}
+      {imoveis.length === 0 && (
+        <div className="mb-6 bg-[#c8a96e]/5 border border-[#c8a96e]/20 rounded-xl p-4 flex items-start gap-3">
+          <Building2 size={16} className="text-[#c8a96e] mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="text-[#c8a96e] text-sm font-medium">Integração Ego Real Estate</p>
+            <p className="text-white/40 text-xs mt-0.5">
+              Configure <code className="bg-white/10 px-1 rounded">EGO_API_KEY</code> e{' '}
+              <code className="bg-white/10 px-1 rounded">EGO_EMPRESA_ID</code> nas variáveis de ambiente da Vercel e clique em{' '}
+              <strong className="text-white/60">Sync Ego RE</strong> para importar os imóveis.
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Filters */}
       <div className="flex gap-3 mb-6">

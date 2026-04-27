@@ -205,11 +205,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, total, inserted, updated })
   } catch (err: unknown) {
     const cause = err instanceof Error ? (err as Error & { cause?: unknown }).cause : undefined
+    const isNetworkError = String(err).includes('fetch failed') || String(err).includes('ENOTFOUND') || String(err).includes('ECONNREFUSED')
     return NextResponse.json({
-      error: String(err),
+      error: isNetworkError
+        ? `Não foi possível conectar à API do Ego. Verifique se o endpoint está correto: ${EGO_BASE_URL}/leads`
+        : String(err),
       cause: cause ? String(cause) : undefined,
       api_key_set: !!EGO_API_KEY,
       empresa_id: EGO_EMPRESA_ID,
+      url_tentada: `${EGO_BASE_URL}/leads`,
     }, { status: 500 })
   }
 }

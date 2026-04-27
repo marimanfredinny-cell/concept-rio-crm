@@ -164,16 +164,18 @@ export default function TrafegoPage() {
           <div>
             <p className="text-[#c8a96e] text-sm font-medium">Como configurar o Tráfego Pago</p>
             <p className="text-white/40 text-xs mt-1 leading-relaxed">
-              <strong className="text-white/60">Google Ads:</strong> Configure{' '}
+              Adicione as variáveis no painel da Vercel em <strong className="text-white/60">Settings → Environment Variables</strong> e clique em Sync para importar.
+              <br /><br />
+              <strong className="text-white/60">Meta Ads:</strong>{' '}
+              <code className="bg-white/10 px-1 rounded">META_ACCESS_TOKEN</code> e{' '}
+              <code className="bg-white/10 px-1 rounded">META_AD_ACCOUNT_ID</code>
+              <br />
+              <strong className="text-white/60">Google Ads:</strong>{' '}
               <code className="bg-white/10 px-1 rounded">GOOGLE_ADS_DEVELOPER_TOKEN</code>,{' '}
               <code className="bg-white/10 px-1 rounded">GOOGLE_ADS_CLIENT_ID</code>,{' '}
               <code className="bg-white/10 px-1 rounded">GOOGLE_ADS_CLIENT_SECRET</code>,{' '}
               <code className="bg-white/10 px-1 rounded">GOOGLE_ADS_REFRESH_TOKEN</code>,{' '}
               <code className="bg-white/10 px-1 rounded">GOOGLE_ADS_CUSTOMER_ID</code>
-              <br />
-              <strong className="text-white/60">Meta Ads:</strong> Configure{' '}
-              <code className="bg-white/10 px-1 rounded">META_ACCESS_TOKEN</code> e{' '}
-              <code className="bg-white/10 px-1 rounded">META_AD_ACCOUNT_ID</code> no <code className="bg-white/10 px-1 rounded">.env.local</code>.
             </p>
           </div>
         </div>
