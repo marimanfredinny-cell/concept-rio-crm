@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS leads (
     CHECK (status IN ('novo','contato','visita_agendada','visita_realizada','proposta','negociacao','fechado','perdido')),
   data_entrada DATE DEFAULT CURRENT_DATE,
   ultimo_contato DATE DEFAULT CURRENT_DATE,
+  ego_lead_id TEXT UNIQUE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -181,3 +182,11 @@ CREATE INDEX IF NOT EXISTS idx_atendimentos_lead_id ON atendimentos(lead_id);
 CREATE INDEX IF NOT EXISTS idx_atendimentos_data ON atendimentos(data);
 CREATE INDEX IF NOT EXISTS idx_imoveis_ego_id ON imoveis(ego_id);
 CREATE INDEX IF NOT EXISTS idx_campanhas_plataforma ON campanhas_ads(plataforma);
+CREATE INDEX IF NOT EXISTS idx_leads_ego_lead_id ON leads(ego_lead_id);
+
+-- ============================================================
+-- MIGRAÇÃO: adicionar ego_lead_id se a tabela já existir
+-- Execute apenas se o banco já estiver criado
+-- ============================================================
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS ego_lead_id TEXT UNIQUE;
+CREATE INDEX IF NOT EXISTS idx_leads_ego_lead_id ON leads(ego_lead_id);

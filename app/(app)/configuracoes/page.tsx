@@ -1,10 +1,35 @@
 'use client'
 
 import { useState } from 'react'
-import { Settings, Key, Users, Building2 } from 'lucide-react'
+import { Settings, Key, Users, Building2, RefreshCw } from 'lucide-react'
 
 export default function ConfiguracoesPage() {
   const [tab, setTab] = useState<'integracoes' | 'usuarios'>('integracoes')
+  const [syncingLeads, setSyncingLeads] = useState(false)
+  const [syncingImoveis, setSyncingImoveis] = useState(false)
+  const [syncMsg, setSyncMsg] = useState<{ ok: boolean; text: string } | null>(null)
+
+  async function handleSync(endpoint: string, label: string, setter: (v: boolean) => void) {
+    setter(true)
+    setSyncMsg(null)
+    try {
+      const res = await fetch(endpoint, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        setSyncMsg({ ok: false, text: `${label}: ${data.error ?? 'Erro desconhecido'}` })
+      } else {
+        const detail = label === 'Leads'
+          ? `${data.inserted ?? 0} novos, ${data.updated ?? 0} atualizados (total ${data.total ?? 0})`
+          : `${data.upserted ?? 0} imóveis sincronizados (total ${data.total ?? 0})`
+        setSyncMsg({ ok: true, text: `${label} sincronizados: ${detail}` })
+      }
+    } catch {
+      setSyncMsg({ ok: false, text: `${label}: erro de conexão com a API do Ego` })
+    } finally {
+      setter(false)
+      setTimeout(() => setSyncMsg(null), 8000)
+    }
+  }
 
   return (
     <div className="p-8 max-w-3xl">
@@ -36,8 +61,38 @@ export default function ConfiguracoesPage() {
               <h2 className="text-white font-medium">Ego Real Estate</h2>
             </div>
             <p className="text-white/40 text-sm mb-4">
-              Configure a sincronização de imóveis com a plataforma Ego Real Estate.
+              Sincronize imóveis e leads do Ego Real Estate (onde o site está hospedado) com este CRM.
             </p>
+
+            {syncMsg && (
+              <div className={`mb-4 px-4 py-3 rounded-lg text-sm ${
+                syncMsg.ok
+                  ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+                  : 'bg-red-500/10 border border-red-500/20 text-red-400'
+              }`}>
+                {syncMsg.text}
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              <button
+                onClick={() => handleSync('/api/ego/leads/sync', 'Leads', setSyncingLeads)}
+                disabled={syncingLeads || syncingImoveis}
+                className="flex items-center justify-center gap-2 bg-[#c8a96e]/10 hover:bg-[#c8a96e]/20 border border-[#c8a96e]/20 text-[#c8a96e] px-4 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <RefreshCw size={14} className={syncingLeads ? 'animate-spin' : ''} />
+                {syncingLeads ? 'Sincronizando…' : 'Sincronizar Leads'}
+              </button>
+              <button
+                onClick={() => handleSync('/api/ego/sync', 'Imóveis', setSyncingImoveis)}
+                disabled={syncingLeads || syncingImoveis}
+                className="flex items-center justify-center gap-2 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-white/60 hover:text-white/80 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <RefreshCw size={14} className={syncingImoveis ? 'animate-spin' : ''} />
+                {syncingImoveis ? 'Sincronizando…' : 'Sincronizar Imóveis'}
+              </button>
+            </div>
+
             <div className="space-y-3">
               <div>
                 <label className="block text-[11px] text-white/40 mb-1.5 tracking-widest uppercase">
