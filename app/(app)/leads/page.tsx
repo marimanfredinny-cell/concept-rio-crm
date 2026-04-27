@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, Search, Filter, MessageSquare, Edit2, Trash2, ChevronDown } from 'lucide-react'
+import { Plus, Search, Filter, MessageSquare, Edit2, Trash2, ChevronDown, RefreshCw } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import LeadModal from '@/components/leads/LeadModal'
 import AtendimentoModal from '@/components/leads/AtendimentoModal'
@@ -25,6 +25,8 @@ export default function LeadsPage() {
   const [atendimentoLead, setAtendimentoLead] = useState<Lead | null>(null)
   const [currentUser] = useState('Luiz')
   const [userRole, setUserRole] = useState<string>('corretor')
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState<{ ok: boolean; text: string } | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -52,6 +54,28 @@ export default function LeadsPage() {
       return
     }
     await load()
+  }
+
+  const handleEgoSync = async () => {
+    setSyncing(true)
+    setSyncMsg(null)
+    try {
+      const res = await fetch('/api/ego/leads/sync', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        setSyncMsg({ ok: false, text: data.error ?? 'Erro ao sincronizar' })
+      } else if (data.total === 0) {
+        setSyncMsg({ ok: true, text: 'Nenhum lead encontrado no Ego. Verifique as credenciais.' })
+      } else {
+        setSyncMsg({ ok: true, text: `Sync concluído: ${data.inserted} novos, ${data.updated} atualizados (total ${data.total})` })
+        await load()
+      }
+    } catch {
+      setSyncMsg({ ok: false, text: 'Erro de conexão com a API do Ego' })
+    } finally {
+      setSyncing(false)
+      setTimeout(() => setSyncMsg(null), 6000)
+    }
   }
 
   const handleStatusChange = async (lead: Lead, status: LeadStatus) => {
@@ -86,14 +110,35 @@ export default function LeadsPage() {
           <h1 className="text-white text-2xl font-semibold">Leads</h1>
           <p className="text-white/30 text-sm mt-1">{filtered.length} leads encontrados</p>
         </div>
-        <button
-          onClick={() => { setEditLead(null); setShowModal(true) }}
-          className="flex items-center gap-2 bg-[#c8a96e] hover:bg-[#dfc28e] text-black px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
-        >
-          <Plus size={16} />
-          Novo Lead
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleEgoSync}
+            disabled={syncing}
+            title="Importar leads do Ego Real Estate"
+            className="flex items-center gap-2 bg-[#1a1a1a] hover:bg-white/[0.06] border border-white/[0.08] text-white/60 hover:text-white/80 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <RefreshCw size={14} className={syncing ? 'animate-spin' : ''} />
+            {syncing ? 'Sincronizando…' : 'Sync Ego'}
+          </button>
+          <button
+            onClick={() => { setEditLead(null); setShowModal(true) }}
+            className="flex items-center gap-2 bg-[#c8a96e] hover:bg-[#dfc28e] text-black px-4 py-2.5 rounded-lg text-sm font-medium transition-colors"
+          >
+            <Plus size={16} />
+            Novo Lead
+          </button>
+        </div>
       </div>
+
+      {syncMsg && (
+        <div className={`mb-4 px-4 py-3 rounded-lg text-sm font-medium ${
+          syncMsg.ok
+            ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+            : 'bg-red-500/10 border border-red-500/20 text-red-400'
+        }`}>
+          {syncMsg.text}
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex gap-3 mb-6 flex-wrap">

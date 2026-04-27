@@ -36,6 +36,7 @@ export interface Lead {
   utm_source?: string
   utm_medium?: string
   utm_content?: string
+  ego_lead_id?: string
   status: LeadStatus
   data_entrada: string
   ultimo_contato: string
@@ -122,6 +123,7 @@ export const ORIGENS = [
   'TikTok',
   'Indicação',
   'Site',
+  'Ego',
   'WhatsApp',
   'ZAP Imóveis',
   'OLX',
