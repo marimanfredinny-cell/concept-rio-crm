@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     `
 
     const res = await fetch(
-      `https://googleads.googleapis.com/v17/customers/${CUSTOMER_ID}/googleAds:searchStream`,
+      `https://googleads.googleapis.com/v18/customers/${CUSTOMER_ID}/googleAds:searchStream`,
       {
         method: 'POST',
         headers: {
@@ -93,7 +93,9 @@ export async function POST(req: NextRequest) {
             sincronizado_em: new Date().toISOString(),
           })
         }
-      } catch {}
+      } catch (parseErr) {
+        console.error('Google Ads parse error:', parseErr)
+      }
     }
 
     const supabase = await createClient()

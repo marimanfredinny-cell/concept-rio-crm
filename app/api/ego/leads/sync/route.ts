@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
           // Update contact info only — preserve CRM-managed fields
           await supabase.from('leads').update({
             nome,
-            telefone: telefone || existing.id,
+            telefone: telefone || 'Não informado',
             email: lead.email ?? undefined,
             bairro_interesse: lead.bairro_interesse ?? lead.bairro ?? undefined,
             tipo_imovel_interesse: lead.tipo_imovel ?? undefined,

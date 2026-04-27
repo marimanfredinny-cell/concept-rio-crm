@@ -22,9 +22,31 @@ interface EgoImovel {
   cidade?: string
   uf?: string
   descricao?: string
-  fotos?: Array<{ url: string }>
+  fotos?: Array<{ url?: string; link?: string; src?: string; thumb?: string; uri?: string } | string>
+  imagens?: Array<{ url?: string; link?: string; src?: string; thumb?: string; uri?: string } | string>
+  photos?: Array<{ url?: string; link?: string; src?: string } | string>
+  images?: Array<{ url?: string; link?: string; src?: string } | string>
   url?: string
   [key: string]: unknown
+}
+
+function extractImagens(im: EgoImovel): string[] {
+  const raw = im.fotos ?? im.imagens ?? im.photos ?? im.images ?? []
+  if (!Array.isArray(raw)) return []
+  return raw
+    .map(f => {
+      if (typeof f === 'string') return f
+      if (typeof f === 'object' && f !== null) {
+        return (f as Record<string, string>).url ??
+               (f as Record<string, string>).link ??
+               (f as Record<string, string>).src ??
+               (f as Record<string, string>).thumb ??
+               (f as Record<string, string>).uri ?? ''
+      }
+      return ''
+    })
+    .filter(Boolean)
+    .slice(0, 10)
 }
 
 export async function POST(req: NextRequest) {
@@ -85,7 +107,7 @@ export async function POST(req: NextRequest) {
         bairro: im.bairro ?? '',
         cidade: im.cidade ?? 'Rio de Janeiro',
         descricao: im.descricao ?? '',
-        imagens: (im.fotos ?? []).map((f) => f.url).slice(0, 10),
+        imagens: extractImagens(im),
         url_ego: im.url ?? '',
         dados_completos: im,
         sincronizado_em: new Date().toISOString(),
